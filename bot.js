@@ -12,7 +12,6 @@ const PASSWORD = 'mypaspas';
 let isAuthenticated = false;
 let lastAction = Date.now();
 let reconnectAttempts = 0;
-const MAX_RECONNECTS = 5;
 
 function createBotInstance() {
   const bot = mineflayer.createBot(CONFIG);
@@ -108,20 +107,16 @@ function createBotInstance() {
 
   bot.on('error', (err) => {
     console.error('⚠️ Ошибка:', err.message);
-    if (!isAuthenticated) attemptReconnect();
+    attemptReconnect();
   });
 
   return bot;
 }
 
 function attemptReconnect() {
-  if (reconnectAttempts >= MAX_RECONNECTS) {
-    console.log('🚫 Превышено макс. число попыток подключения.');
-    return;
-  }
+  const delay = Math.min(60000, 5000 + reconnectAttempts * 2000);
   reconnectAttempts++;
-  const delay = Math.min(30000, 5000 * reconnectAttempts);
-  console.log(`🔄 Попытка переподключения ${reconnectAttempts}/${MAX_RECONNECTS} через ${delay/1000} сек...`);
+  console.log(`🔄 Переподключение через ${delay/1000} сек (попытка ${reconnectAttempts})...`);
   setTimeout(() => {
     console.log('🔄 Переподключение...');
     global.bot = createBotInstance();
